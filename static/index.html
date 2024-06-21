@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Explore CNN Parameters</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Explore CNN Parameters</h1>
+    <form id="train-form">
+        <label>Conv Layers: <input type="number" name="conv_layers" value="2"></label>
+        <label>Filters: <input type="number" name="filters" value="32"></label>
+        <label>Kernel Size: <input type="number" name="kernel_size" value="3"></label>
+        <label>Pool Size: <input type="number" name="pool_size" value="2"></label>
+        <label>Dense Units: <input type="number" name="dense_units" value="128"></label>
+        <label>Epochs: <input type="number" name="epochs" value="5"></label>
+        <button type="submit">Train Model</button>
+    </form>
+    <div id="result"></div>
+    <canvas id="accuracyChart" width="400" height="200"></canvas>
+
+    <script>
+        document.getElementById('train-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const params = {};
+            formData.forEach((value, key) => params[key] = parseInt(value));
+
+            fetch('/train', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            }).then(response => response.json()).then(data => {
+                document.getElementById('result').innerText = 'Accuracy: ' + data.accuracy;
+                updateChart(data.accuracy);
+            });
+        });
+
+        function updateChart(accuracy) {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Model Accuracy'],
+                    datasets: [{
+                        label: 'Accuracy',
+                        data: [accuracy],
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
